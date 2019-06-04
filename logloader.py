@@ -2,9 +2,9 @@ import sys
 
 def load_log(filename):
     try:
-        inputfile = open(filename, "r")
-
-        inputfile.readline() # ECU signature, unused
+        inputfile = open(filename, "r", encoding='latin-1')
+        
+        tunerstudio = len(inputfile.readline()) > 32 # ECU signature, unused
         inputfile.readline() # Log timestamp, unused
         titles = inputfile.readline().strip().split('\t')
         inputfile.readline() # Units, unused
