@@ -43,13 +43,6 @@ if __name__ == '__main__':
 
     data["files"].append(sys.argv[1])
 
-    for value in values:
-        if value['PW'] > 0 and value['AFR'] >= 8:
-            afr = value['AFR'] * value['EGO cor1']/100
-            value['accuracy'] = afr-value['AFR Target 1']
-        else:
-            value['accuracy'] = 1
-
     VEtable = table3d(16, 0)
     VEtable.xaxis = table['x']
     VEtable.yaxis = table['y']
@@ -58,11 +51,17 @@ if __name__ == '__main__':
     AFRtable.xaxis = table['x']
     AFRtable.yaxis = table['y']
 
+    engineIsCold = True
     for value in values:
-        if value["Fuel: Warmup cor"] <= 100 and value["PW"] > 0:
-            VEtable.put(value['RPM'], value['MAP'], value['accuracy'])
+        if engineIsCold:
+            engineIsCold = value["Fuel: Warmup cor"] > 100 or value['AFR'] < 8
+        elif value["PW"] > 0:
+            afr = value['AFR'] * value['EGO cor1']/100
+            accuracy = afr-value['AFR Target 1']
+
+            VEtable.put(value['RPM'], value['MAP'], accuracy)
             AFRtable.put(value['RPM'], value['MAP'], value['AFR'])
-    
+
     print(AFRtable)
 
     for y in range(16):
