@@ -37,11 +37,13 @@ if __name__ == '__main__':
                 line.append([])
             data["values"].append(line)
 
-    if sys.argv[1] in data["files"]:
+    logname = sys.argv[1].replace('\\', '/').split('/')[-1]
+
+    if logname in data["files"]:
         print("File already processed.")
         exit(1)
 
-    data["files"].append(sys.argv[1])
+    data["files"].append(logname)
 
     VEtable = table3d(16, 0)
     VEtable.xaxis = table['x']
@@ -66,12 +68,15 @@ if __name__ == '__main__':
 
     for y in range(16):
         for x in range(16):
+            cell = data["values"][y][x]
             if VEtable.weigth[y][x] > 0:
-                data["values"][y][x].append([table['z'][y][x], round(VEtable.bins[y][x],2)])
-                best = get_best(data["values"][y][x])
+                cell.append([table['z'][y][x], round(VEtable.bins[y][x],2)])
+                best = get_best(cell)
                 table['z'][y][x] += int(VEtable.bins[y][x]*3)
             else:
-                data["values"][y][x].append([table['z'][y][x], None])
+                z = [table['z'][y][x], None]
+                if z not in cell:
+                    cell.append(z)
 
     tableloader.print_xml(sys.argv[2], table)
 
