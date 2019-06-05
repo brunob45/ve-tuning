@@ -78,7 +78,7 @@ if __name__ == '__main__':
                 if z not in cell:
                     cell.append(z)
 
-    tableloader.print_xml(sys.argv[2], table)
+    # tableloader.print_xml(sys.argv[2], table)
 
     output = open("data.json", 'w')
     json.dump(data, output, indent=2)
