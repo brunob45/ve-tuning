@@ -1,7 +1,9 @@
-import numpy as np
+# import numpy as np
 import matplotlib.pyplot as plt
 import json
 import sys
+
+thresh = 0.3
 
 f = open("data.json", "r")
 table = json.load(f)["values"]
@@ -12,46 +14,22 @@ for j in range(16):
         x = []
         y = []
         c = []
-        # print(table[j][i])
+        s = []
         for z in table[j][i]:
             if z[1] is not None:
-                x.append(z[0])
-                y.append(abs(z[1]))
-                if z[1] < 0:
-                    c.append(-1)
+                x.append(len(x)+1)
+                y.append(z[1])
+                if z[1] < -thresh:
+                    c.append("red")
+                elif z[1] > thresh:
+                    c.append("blue")
                 else:
-                    c.append(1)
+                    c.append("green")
         if len(x) > 0:
-            plt.subplot(16,16,16*(15-j)+i)
-            plt.scatter(x, y, s=15, c=c)
-            plt.axis([15, 100, 0, 5])
-
-
-# Fixing random state for reproducibility
-# np.random.seed(19680801)
-
-
-# x = np.random.rand(10)
-# y = np.random.rand(10)
-# z = np.sqrt(x**2 + y**2)
-
-# plt.subplot(16,16,1)
-# plt.scatter(x, y, s=5)
-
-# plt.subplot(322)
-# plt.scatter(x, y, s=80, c=z, marker=(5, 0))
-
-# verts = np.array([[-1, -1], [1, -1], [1, 1], [-1, -1]])
-# plt.subplot(323)
-# plt.scatter(x, y, s=80, c=z, marker=verts)
-
-# plt.subplot(324)
-# plt.scatter(x, y, s=80, c=z, marker=(5, 1))
-
-# plt.subplot(325)
-# plt.scatter(x, y, s=80, c=z, marker='+')
-
-# plt.subplot(326)
-# plt.scatter(x, y, s=80, c=z, marker=(5, 2))
+            plt.subplot(1,16,i+1)
+            plt.axis([0, len(x)+1, -5, 5])
+            # plt.scatter(x, y, s=5, c=c)
+            plt.plot(x, y)
+    plt.show()
 
 plt.show()
