@@ -54,14 +54,15 @@ class Cell:
     
     def __repr__(self):
         s = ""
-        keys = self.values.keys()
+        keys = list(self.values.keys())
         while len(keys) > 0:
             lowest = '999'
-            for key in keys:
+            for index in range(len(keys)):
+                key = keys[index]
                 if int(key) < int(lowest):
-                    lowest = key
-            s += str((lowest, self.values[lowest])) + ','
-            del self.values[lowest]
+                    lowest = index
+            s += str((keys[lowest], self.values[keys[lowest]])) + ','
+            del keys[lowest]
         return s
 
 
@@ -69,19 +70,7 @@ for j in range(16):
     for i in range(16):
         new_value = table[j][i][0][0]
         cell = Cell(table[j][i])
-        # if cell.is_exact():
-        #     bestscore = 999
-        #     bestitem = None
-        #     for v in cell.values.values():
-        #         if abs(v.avg) < bestscore:
-        #             bestscore = abs(v.avg)
-        #             bestitem = (v.VE, v.avg)
-        #     if bestitem[1] < -0.3:
-        #         new_value = bestitem[0] - 1
-        #     elif bestitem[1] > 0.3:
-        #         new_value = bestitem[0] + 1
-        #     else:
-        #         new_value = bestitem[0]
+
         if cell.is_complete():
             max_neg_item = None
             max_neg_score = -999
@@ -97,6 +86,7 @@ for j in range(16):
             m = (max_neg_item - min_pos_item)/(max_neg_score-min_pos_score)
             b = max_neg_item - (m*max_neg_score)
             new_value = int(round(b,0))
+
         else:
             bestscore = 999
             bestitem = None
@@ -108,6 +98,7 @@ for j in range(16):
                 new_value = bestitem[0] + int(bestitem[1]*3)
         output['z'][j][i] = new_value
 
-        print(cell, new_value)
+        if len(cell.values) > 0:
+            print(cell, new_value)
 
 tableloader.print_xml(sys.argv[1], output)
