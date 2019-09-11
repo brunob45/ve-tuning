@@ -1,54 +1,56 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-import xml
+import json
 
 if len(sys.argv) < 2:
     print("missing argument")
     exit(1)
-try: inputfile = open(sys.argv[1], "r")
+try:
+    values = json.load(open(sys.argv[1], "r"))
 except :
     print("unable to open", sys.argv[1])
     exit(2)
 
-inputfile.readline() # ECU signature, unused
-inputfile.readline() # Log timestamp, unused
-titles = inputfile.readline().strip().split('\t')
-inputfile.readline() # Units, unused
-
-values = []
 RPM = []
 MAP = []
-AFR = []
+VEc = []
+MAT = []
+CLT = []
+FIT = []
 size = []
 
-for line in inputfile:
-    capture = line.strip().replace(',', '.').split('\t')
-    if len(titles) == len(capture):
-        value = {}
-        for index in range(len(capture)):
-            value[titles[index]] = float(capture[index])
-        if len(values) > 0 or value['AFR'] > 8:
-            if(value['TPS'] > 1):
-                values.append(value)
-                RPM.append(value['RPM'])
-                MAP.append(value['MAP'])
-                afr = value['AFR'] * value['EGO cor1']/100
-                afrtgt = value['AFR Target 1']
-                v = afr-afrtgt
-                # print(afr, afrtgt, v)
-                # exit(0)
-                if v < -0.5:
-                    AFR.append(-0.5)
-                elif v > 0.5:
-                    AFR.append(0.5)
-                else:
-                    AFR.append(v)
-                #size.append(min(0.5, abs(v)) * 4 + 2)
-                size.append(3)
+for value in values:
+    f = value["fitness"]
+
+    if value["Fuel: Warmup cor"] <= 100:
+        RPM.append(value["RPM"])
+        MAP.append(value["MAP"])
+        r = min(1, max(0, f * 5))
+        g = min(1, max(0, 1-abs(f * 5)))
+        b = min(1, max(0, -f * 5))
+        VEc.append([r,g,b])
+
+    MAT.append(value["MAT"])
+    CLT.append(value["CLT"])
+    FIT.append(f)
 
 
-fig, ax = plt.subplots()
-ax.scatter(RPM, MAP, c=AFR, s=size, alpha=0.75, edgecolors='none')
-ax.grid(True)
+plt.subplot(131)
+plt.scatter(MAT, FIT, c=FIT, s=20, alpha=0.1, edgecolors='none')
+plt.title("MAT")
+plt.grid(True)
+plt.ylim(-0.3, 0.3)
+
+plt.subplot(132)
+plt.scatter(CLT, FIT, c=FIT, s=20, alpha=0.1, edgecolors='none')
+plt.title("CLT")
+plt.grid(True)
+plt.ylim(-0.3, 0.3)
+
+plt.subplot(133)
+plt.scatter(RPM, MAP, c=VEc, s=20, alpha=0.1, edgecolors='none')
+plt.title("VE")
+plt.grid(True)
+
 plt.show()
