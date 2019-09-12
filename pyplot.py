@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import json
+import math
 
 if len(sys.argv) < 2:
     print("missing argument")
@@ -11,6 +12,76 @@ try:
 except :
     print("unable to open", sys.argv[1])
     exit(2)
+
+xbins = [600, 800, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500]
+x = [0] * len(xbins)
+ybins = [10, 16, 22, 28, 34, 40, 46, 52, 58, 64, 70, 76, 82, 88, 94, 100]
+y = [0] * len(ybins)
+z = []
+
+for index in range(len(x)-1):
+    x[index] = (xbins[index]+xbins[index+1])/2
+x[-1] = float('inf')
+
+for index in range(len(y)-1):
+    y[index] = (ybins[index]+ybins[index+1])/2
+y[-1] = float('inf')
+for j in range(len(y)):
+    row = []
+    for i in range(len(x)):
+        row.append([])
+    z.append(row)
+for value in values:
+    done = False
+    for j in range(len(y)):
+        if value["MAP"] < y[j]:
+            for i in range(len(x)):
+                if value["RPM"] < x[i]:
+                    done = True
+                    z[j][i].append(value)
+                if done: break
+        if done: break
+
+firstrow = 0
+
+fig = plt.figure()
+fig.patch.set_facecolor('xkcd:black')
+
+for j in range(len(y)):
+    axisRow = False
+    for i in range(len(x)):
+        RPM = []
+        MAP = []
+        FIT = []
+        for value in z[j][i]:
+            RPM.append(value["RPM"])
+            MAP.append(value["MAP"])
+            if "fitness2" in value.keys():
+                f = value["fitness2"]
+            else:
+                f = value["fitness"]
+            r = min(1, max(0, 10*f))
+            g = min(1, max(0, -10*abs(f)+2))
+            b = min(1, max(0, -10*f))
+            FIT.append([r,g,b])
+        if len(RPM) > 0 or j == len(y)-1:
+            plt.subplot(len(y), len(x)+1, (len(y)-1-j)*(len(x)+1) + i+2)
+            if j == len(y)-1:
+                plt.title(str(xbins[i]), color='w')
+            plt.axis('off')
+            if len(RPM) > 0:
+                alpha = 1/math.log(len(RPM)+1,2)
+                size = alpha*100
+                plt.scatter(RPM, MAP, c=FIT, s=size, alpha=min(1,alpha), edgecolors='none')
+
+for j in range(len(ybins)-1):
+    plt.subplot(len(y), len(x)+1, (len(y)-1-j)*(len(x)+1) + 1)
+    plt.title(str(ybins[j+1]), color='w')
+    plt.axis('off')
+
+plt.show()
+exit(0)
+
 
 RPM = []
 MAP = []

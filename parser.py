@@ -8,12 +8,11 @@ import tableloader
 afrReady = False
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         print("missing argument")
         exit(1)
 
     values = logloader.load_log(sys.argv[1])
-    table = tableloader.load_xml(sys.argv[2])
 
     newLog = []
 
@@ -32,7 +31,8 @@ if __name__ == '__main__':
             newLine[title] = value[title]
         newLine["Sync"] = (int(value["status1"]) & 8 == 8)
         newLine["fitness"] = (newLine["AFR"] - newLine["AFR Target 1"]) / newLine["AFR Target 1"]
-        newLine["VE Target"] = round(newLine["VE1"] * (1+newLine["fitness"]),1)
+        newLine["fitness2"] = newLine["fitness"] + (value["EGO cor1"]-100)/100
+        newLine["VE Target"] = round(newLine["VE1"] * (1+newLine["fitness2"]),1)
 
         newLog.append(newLine)
 
