@@ -19,7 +19,7 @@ def get_best(values):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print("missing argument")
+        print("missing argument: 'log.msl ve.table'")
         exit(1)
 
     values = logloader.load_log(sys.argv[1])
@@ -54,29 +54,37 @@ if __name__ == '__main__':
     AFRtable.yaxis = table['y']
 
     engineIsCold = True
+    invalidAFR = 0
     for value in values:
         if engineIsCold:
             engineIsCold = value["Fuel: Warmup cor"] > 100 or value['AFR'] < 8
-        elif value["PW"] > 0:
+
+        elif value['Accel PW'] > 0 or value['PW'] <= 0:
+            invalidAFR = 10
+
+        elif invalidAFR == 0:
             afr = value['AFR'] * value['EGO cor1']/100
             accuracy = afr-value['AFR Target 1']
 
             VEtable.put(value['RPM'], value['MAP'], accuracy)
             AFRtable.put(value['RPM'], value['MAP'], value['AFR'])
 
+        else:
+            invalidAFR -= 1
+
     print(AFRtable)
 
     for y in range(16):
         for x in range(16):
             cell = data["values"][y][x]
-            if VEtable.weigth[y][x] > 0:
-                cell.append([table['z'][y][x], round(VEtable.bins[y][x],2)])
-                best = get_best(cell)
-                table['z'][y][x] += int(VEtable.bins[y][x]*3)
-            else:
-                z = [table['z'][y][x], None]
-                if z not in cell:
-                    cell.append(z)
+            c = {}
+            c['VE'] = table['z'][y][x]
+            c['count'] = len(VEtable.bins[y][x].values)
+            if VEtable.weigth(y,x) > 0:
+                c['accuracy'] = round(VEtable.bins[y][x].avg(),2)
+                c['std_dev'] = round(VEtable.bins[y][x].std(),2)
+                
+            cell.append(c)
 
     # tableloader.print_xml(sys.argv[2], table)
 
